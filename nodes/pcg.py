@@ -54,7 +54,7 @@ while not rospy.is_shutdown():
         print "PCG: The current scan is {0}".format(currentScan)
 
     if currentAngle != None and currentScan != None:
-        print "PCG: Got bothe laser scan data and angle data!"
+        print "PCG: Got both laser scan data and angle data!"
         # TODO: Store this information in a data structure
         # Check if we've received a full point cloud scan
         # (for each angle between 0 and 90 degrees, we got a laser scan)
