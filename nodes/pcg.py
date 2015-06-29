@@ -8,6 +8,8 @@ from sensor_msgs.msg import PointCloud2, LaserScan
 import re                           #for findall()
 import string                       #for split()
 
+#test commit
+
 # initialize ROS node
 rospy.init_node('PCG', anonymous=True)
 
