@@ -19,6 +19,11 @@ cloudPublisher = rospy.Publisher("pointCloud", PointCloud2, queue_size = 0)
 stepMsg = Int32()
 cloudMsg = PointCloud2()
 
+# Explicitly declare these global variables (probably not necessary)
+currentAngle = None
+currentScan = None
+
+# Declare some ROS topic subscriber callback function
 def scanCallback(msg):
     print "PCG: scanCallback called"
     currentScan = msg
@@ -28,15 +33,11 @@ def angleCallback(msg):
     currentAngle = msg
 
 
-# instantiate the subscribers
+# Instantiate the subscribers
 scanSubscriber  = rospy.Subscriber("scan", LaserScan, scanCallback)
 angleSubscriber = rospy.Subscriber("angle", Float64, angleCallback)
 
-currentAngle = None
-currentScan = None
-
-
-
+# Create a rate control object
 rate = rospy.Rate(1) # 1Hz
 
 while not rospy.is_shutdown():
