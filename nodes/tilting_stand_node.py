@@ -100,6 +100,7 @@ def initArduino():
 
 def takeOneStep():
     global ser
+    global newAngle
     
     stepCounter = 0
 
@@ -113,7 +114,11 @@ def takeOneStep():
         data = readEntireLine() #the last bit gets rid of the new-line chars
         if data:
             print "stepAngle: Recieved data: \"{0}\"".format(data)
-            if data[len(data)-3:-2] == "F":
+            if data.startswith('AA'):
+                print "-----------FOUND ANGLE DATA!!!!!!"
+                newAngle = data[2:]
+                print newAngle
+            elif data[len(data)-3:-2] == "F":
                 print "stepAngle: finished moving one step"
                 #time.sleep(.1)
                 done = True
@@ -132,12 +137,12 @@ if openSerialPort():
             else:
                 print "TSN: The step command is {0}".format(stepCommand)
 
-                # TODO: Communicate with the Arduino. Tell it to take a step and
+                # Communicate with the Arduino. Tell it to take a step and
                 # get the latest angle of the tilting base.
 
                 takeOneStep()
 
-                currentAngle = 0.0  # TEMP!  Replace Me!
+                currentAngle = float(newAngle) 
 
                 stepCommand = None # So we can detect when a new step command arrives.
 
