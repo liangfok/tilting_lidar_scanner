@@ -14,7 +14,7 @@ ser = 0
 inputStringBuffer = ""
 
 # Change this to change the speed of this program:
-hertz = 1
+hertz = 100
 
 # initialize ROS node
 rospy.init_node('Tilting_Stand_Node', anonymous=True)

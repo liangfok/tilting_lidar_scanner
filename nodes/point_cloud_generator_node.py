@@ -11,7 +11,7 @@ import string                       #for split()
 import time
 
 # Change this to change the speed of this program:
-hertz = 1
+hertz = 100
 
 first = True
 
@@ -48,6 +48,7 @@ scanSubscriber  = rospy.Subscriber("scan", LaserScan, scanCallback)
 angleSubscriber = rospy.Subscriber("angle", Float64, angleCallback)
 
 def firstScan():
+    global currentAngle
     # Since this is our first scan, there will be no angle data
     # as the angle is 0.0
     currentAngle = 0.0
@@ -57,7 +58,7 @@ def firstScan():
     done = False
     while not done and not rospy.is_shutdown():
         if currentScan == None:
-            print "PCG: Did not do first scan yet..."
+            print "PCG: Has not found first scan yet..."
         else:
             # We have received the scan now, which is stored in currentScan
             print "PCG: The first scan is {0}".format(currentScan)
@@ -72,11 +73,12 @@ rate = rospy.Rate(hertz)
 
 while not rospy.is_shutdown():
 
+    lsaMsg = LaserScanAngle()
+
     if first and currentAngle == None:
         firstScan()
         first = False
 
-        lsaMsg = LaserScanAngle()
         lsaMsg.laserScan = currentScan
         lsaMsg.stepAngle = currentAngle
         slicePublisher.publish(lsaMsg)
