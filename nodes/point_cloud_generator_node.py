@@ -16,7 +16,7 @@ hertz = 100
 first = True
 
 # initialize ROS node
-rospy.init_node('PCG', anonymous=True)
+rospy.init_node('PC_Generator', anonymous=True)
 
 # instantiate publisher
 stepPublisher = rospy.Publisher("step", Int32, queue_size = 0)
@@ -39,7 +39,7 @@ def scanCallback(msg):
 
 def angleCallback(msg):
     global currentAngle
-    print "PCG: angleCallback called, angle is {0}".format(msg.data)
+    #print "PCG: angleCallback called, angle is {0}".format(msg.data)
     currentAngle = msg.data
 
 
@@ -73,23 +73,28 @@ rate = rospy.Rate(hertz)
 
 while not rospy.is_shutdown():
 
-    lsaMsg = LaserScanAngle()
-
     if first and currentAngle == None:
         firstScan()
         first = False
 
+        lsaMsg = LaserScanAngle()
         lsaMsg.laserScan = currentScan
         lsaMsg.stepAngle = currentAngle
         slicePublisher.publish(lsaMsg)
 
         currentScan = None
         currentAngle = None
+
+        time.sleep(.1)
+        # Take a step, and then we wait for the angle return data
+        stepPublisher.publish(stepMsg)
+        print "PCG: Take a step."
     else:
 
-        # Wait until we get an angle back from the TSN (Tilting Stand Node)
+        # Wait until we get an angle back from the TSN (Tilting Stand Node)\
+        print "PCG: Waiting for angle..."
         done = False
-        while not done:
+        while not done and not rospy.is_shutdown():
             if currentAngle == None:
                 print "PCG: Did not receive current angle yet..."
             else:
@@ -98,9 +103,12 @@ while not rospy.is_shutdown():
 
             rate.sleep()
 
+        currentScan = None
+
         # Wait until we receive a scan from the LiDAR scanner
+        print "PCG: Waiting for LiDAR scan..."
         done = False
-        while not done:
+        while not done and not rospy.is_shutdown():
             if currentScan == None:
                 print "PCG: Did not receive current scan yet..."
             else:
@@ -112,7 +120,7 @@ while not rospy.is_shutdown():
             rate.sleep()
 
         if currentAngle != None and currentScan != None:
-            print "PCG: Got both laser scan data and angle data!"
+            #print "PCG: Got both laser scan data and angle data!"
             # TODO: Store this information in a data structure
             # Check if we've received a full point cloud scan
             # (for each angle between 0 and 90 degrees, we got a laser scan)
@@ -129,11 +137,13 @@ while not rospy.is_shutdown():
             lsaMsg.stepAngle = currentAngle
             slicePublisher.publish(lsaMsg)
 
+            # Reset the scan and angle data
             currentScan = None
             currentAngle = None
 
-    # Take a step, and then we wait for the angle return data
-    stepPublisher.publish(stepMsg)
+            # Take a step, and then we wait for the angle return data
+            stepPublisher.publish(stepMsg)
+            print "PCG: Take a step."
 
     cloudPublisher.publish(cloudMsg)
 
