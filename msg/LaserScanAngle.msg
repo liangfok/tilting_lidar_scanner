@@ -1,0 +1,2 @@
+sensor_msgs/LaserScan laserScan
+float64 stepAngle

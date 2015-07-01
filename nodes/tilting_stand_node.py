@@ -13,6 +13,9 @@ import time
 ser = 0
 inputStringBuffer = ""
 
+# Change this to change the speed of this program:
+hertz = 1
+
 # initialize ROS node
 rospy.init_node('Tilting_Stand_Node', anonymous=True)
 
@@ -127,7 +130,7 @@ if openSerialPort():
     if initArduino():
         #continue
 
-        rate = rospy.Rate(1) # 1Hz
+        rate = rospy.Rate(hertz)
 
         while not rospy.is_shutdown():
 
