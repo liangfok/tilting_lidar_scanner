@@ -50,7 +50,7 @@ angleSubscriber = rospy.Subscriber("angle", Float64, angleCallback)
 def firstScan():
     # Since this is our first scan, there will be no angle data
     # as the angle is 0.0
-    currentAngle = 0
+    currentAngle = 0.0
     print "The first angle is: 0.0"
 
     # Wait until we receive a scan from the LiDAR scanner
