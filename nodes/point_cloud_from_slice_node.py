@@ -162,11 +162,12 @@ def findZ(dist, angle, scanAngle):
     global axleHeight
 
     if angle < 90:
-        rad = math.radians(angle)
-        cosVal = math.cos(rad)
+        triangleAng = 90 - angle
+        rad = math.radians(triangleAng)
+        sinVal = math.sin(rad)
         result = axleHeight
         #print "z: %f" % result
-        result += (dist * cosVal)
+        result += (dist * sinVal)
         print "z: %f" % result
         return result
     elif angle == 90:
