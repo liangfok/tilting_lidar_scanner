@@ -5,18 +5,26 @@ import sys, getopt                  #for parameters and sys.exit()
 from std_msgs.msg import Float64, Int32
 from sensor_msgs.msg import PointCloud2, LaserScan
 from pcg_node.msg import LaserScanAngle
+from std_msgs.msg import Header
 
 import re                           #for findall()
 import string                       #for split()
 import time
 import math
 
+import point_cloud_message_creator
+
+import threading
+
+# Declare a mutex to prevent two threads from accessing
+# the sliceBuffer
+
+sliceBuffMutex = threading.Lock()
+
 # Change this to change the speed of this program:
-hertz = 100
+CYCLE_FREQUENCY = 100
 
 sliceBuffer = []
-counter = 0
-analyzeCounter = 0
 
 currentSlice = 0
 currentSliceString = ""
@@ -28,18 +36,28 @@ currentAngle = 0
 radius = 0.08         # 0.08 meters (80 mm)
 axleHeight = 0.1075   # 0.1075 meters (107.5mm)
 
-
 # initialize ROS node
 rospy.init_node('PC_Slice_Node', anonymous=True)
 
-# Declare some ROS topic subscriber callback function
-def sliceCallback(msg):
-    global sliceBuffer
-    global counter
+# Instantiate a publisher for the sensor_msgs.PointCloud2 message
+cloudPublisher = rospy.Publisher("pointCloud", PointCloud2, queue_size = 0)
 
-    # Store the slice in the slice buffer
-    sliceBuffer.append(msg)
-    counter += 1
+points = []
+
+def sliceCallback(msg):
+    '''
+    The callback method for LaserScanAngle point cloud slice subscriptions.
+    '''
+    global sliceBuffer
+    global sliceBuffMutex
+
+    sliceBuffMutex.acquire()
+    try:
+        # Store the slice in the slice buffer
+        sliceBuffer.append(msg)
+    finally:
+        sliceBuffMutex.release()
+
     #print "Message received #%d" % counter
     #print msg
 
@@ -186,101 +204,114 @@ def findZ(dist, angle, scanAngle):
         print "z: %f" % result
         return result
 
-
-
 def analyzeMsg():
     global currentSlice
     global sliceBuffer
-    global analyzeCounter
+    global sliceBuffMutex
     global currentRanges
 
+    processSlice = False
 
-    if len(sliceBuffer) > analyzeCounter:
-    #if len(sliceBuffer) == 1:
-        currentSlice = sliceBuffer[analyzeCounter]
-        currentSliceString = str(currentSlice)
+    sliceBuffMutex.acquire()
+    try:
+        if len(sliceBuffer) > 0:
+            currentSlice = sliceBuffer.pop(0)  # remove first element from buffer
+            processSlice = True
+    finally:
+        sliceBuffMutex.release()
 
-        # Return only the ranges: [] part of the LaserScanAngle data
-        findRanges(currentSliceString)        
-        #print currentRanges
-
-        # Return only the step angle part of the LaserScanAngle data
-        findAngle(currentSliceString)
-        print currentAngle
-
-
-        # Find the number of data points in each scan by the commas
-        numberScan = currentRanges.count(",", 0, len(currentRanges))
-        print numberScan
-
-        start = 0
-
-        for a in range(0, numberScan + 1): # numberScan + 1
-
-            end = currentRanges.find(",", start)            
-
-            # Remove the space at the beginning
-            if currentRanges[start:end].startswith(' '):
-                start += 1
-
-            # Find the last data set that does not have a ","
-            if end == -1:
-                end = len(currentRanges)
-
-            # Check if the string is infinity or not availible
-            if not currentRanges[start:end].startswith('inf') and not currentRanges[start:end].startswith('nan'):                
-                #print "Finding from %d to %d" % (start, end)
-                #print currentRanges[start:end]
-                currentRangePoint = float(currentRanges[start:end])
-                #print currentRangePoint
-
-                # Here's where we do the math for converting the points
-                # from a distorted perspective to a normal one            
-
-                print "-------------------------------"
-
-                #print "Laser distance: %.12f" % currentRangePoint
-                trueDist = findTrueDist(currentRangePoint)
-                print "Actual distance: %.12f" % trueDist
-
-                floatAngle = float(currentAngle)
-                #print "Laser Angle: %f" % floatAngle
-                trueAngle = findTrueAngle(floatAngle, currentRangePoint)
-                print "Actual Angle is %.12f" % trueAngle
-
-                aFloat = float(a)
-                numberScanFloat = float(numberScan)
-                scanAngle = (aFloat / numberScanFloat) * 180
-                print "Scan angle is: %.12f" % scanAngle 
-
-                # Set these variables as floats
-                x = 0.0
-                y = 0.0
-                z = 0.0
-
-                x = findX(trueDist, trueAngle, scanAngle)
-                y = findY(trueDist, trueAngle, scanAngle)
-                z = findZ(trueDist, trueAngle, scanAngle)
+    if not processSlice:
+        return
 
 
-            # Make sure we grab the next range point
-            start = end + 1
-            
+    currentSliceString = str(currentSlice)
 
-    
-        analyzeCounter += 1
+    # Return only the ranges: [] part of the LaserScanAngle data
+    findRanges(currentSliceString)
+    #print currentRanges
 
+    # Return only the step angle part of the LaserScanAngle data
+    findAngle(currentSliceString)
+    print currentAngle
 
+    # Find the number of data points in each scan by the commas
+    numberScan = currentRanges.count(",", 0, len(currentRanges))
+    print numberScan
+
+    start = 0
+
+    for a in range(0, numberScan + 1): # numberScan + 1
+
+        end = currentRanges.find(",", start)
+
+        # Remove the space at the beginning
+        if currentRanges[start:end].startswith(' '):
+            start += 1
+
+        # Find the last data set that does not have a ","
+        if end == -1:
+            end = len(currentRanges)
+
+        # Check if the string is infinity or not availible
+        if not currentRanges[start:end].startswith('inf') and not currentRanges[start:end].startswith('nan'):
+            #print "Finding from %d to %d" % (start, end)
+            #print currentRanges[start:end]
+            currentRangePoint = float(currentRanges[start:end])
+            #print currentRangePoint
+
+            # Here's where we do the math for converting the points
+            # from a distorted perspective to a normal one
+
+            print "-------------------------------"
+
+            #print "Laser distance: %.12f" % currentRangePoint
+            trueDist = findTrueDist(currentRangePoint)
+            print "Actual distance: %.12f" % trueDist
+
+            floatAngle = float(currentAngle)
+            #print "Laser Angle: %f" % floatAngle
+            trueAngle = findTrueAngle(floatAngle, currentRangePoint)
+            print "Actual Angle is %.12f" % trueAngle
+
+            aFloat = float(a)
+            numberScanFloat = float(numberScan)
+            scanAngle = (aFloat / numberScanFloat) * 180
+            print "Scan angle is: %.12f" % scanAngle
+
+            # Set these variables as floats
+            x = 0.0
+            y = 0.0
+            z = 0.0
+
+            x = findX(trueDist, trueAngle, scanAngle)
+            y = findY(trueDist, trueAngle, scanAngle)
+            z = findZ(trueDist, trueAngle, scanAngle)
+
+            currPoint = [x, y, z]
+            points.append(currPoint)
+
+        # Make sure we grab the next range point
+        start = end + 1
 
 # Create a rate control object
-rate = rospy.Rate(hertz)
+rate = rospy.Rate(CYCLE_FREQUENCY)
 
-print "Started PC Slice Node at %d hertz." % hertz
+print "Started PC Slice Node at %d Hz." % CYCLE_FREQUENCY
 
 while not rospy.is_shutdown():
     # Main loop
-    
+
     analyzeMsg()
+
+    # Instantiate a header
+    header = Header()
+    header.stamp = rospy.Time.now()
+    header.frame_id = "world"
+
+    # Create a message of type sensor_msgs.PointCloud2
+    pointCloud = point_cloud_message_creator.create_cloud_xyz32(header, points)
+
+    cloudPublisher.publish(pointCloud)
 
     rate.sleep()
 

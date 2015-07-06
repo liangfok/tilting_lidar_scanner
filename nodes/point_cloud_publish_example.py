@@ -51,6 +51,9 @@ if __name__ == "__main__":
     # Create a rate control object
     rate = rospy.Rate(PUBLISH_FREQUENCY)
 
+    # Instantiate a publisher for the sensor_msgs.PointCloud2 message
+    cloudPublisher = rospy.Publisher("pointCloud", PointCloud2, queue_size = 0)
+
     while not rospy.is_shutdown():
 
         # Instantiate a 'points' array and fill it up with random points on a sphere
@@ -67,9 +70,6 @@ if __name__ == "__main__":
 
         # Create a message of type sensor_msgs.PointCloud2
         pointCloud = point_cloud_message_creator.create_cloud_xyz32(header, points)
-
-        # Instantiate a publisher for the sensor_msgs.PointCloud2 message
-        cloudPublisher = rospy.Publisher("pointCloud", PointCloud2, queue_size = 0)
 
         cloudPublisher.publish(pointCloud)
         rate.sleep()
