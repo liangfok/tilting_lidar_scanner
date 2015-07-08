@@ -1,2 +1,2 @@
 sensor_msgs/LaserScan laserScan
-float64 stepAngle
+float64 tiltAngle

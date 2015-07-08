@@ -4,7 +4,7 @@ import rospy                        #for interacting with ROS topics and paramet
 import sys, getopt                  #for parameters and sys.exit()
 from std_msgs.msg import Float64, Int32
 from sensor_msgs.msg import PointCloud2, LaserScan
-from pcg_node.msg import LaserScanAngle
+from pcg_node.msg import PointCloudSliceMsg
 
 import re                           #for findall()
 import string                       #for split()
@@ -20,7 +20,7 @@ rospy.init_node('PC_Generator', anonymous=True)
 
 # instantiate publisher
 stepPublisher = rospy.Publisher("step", Int32, queue_size = 0)
-slicePublisher = rospy.Publisher("slice", LaserScanAngle, queue_size = 0)
+slicePublisher = rospy.Publisher("slice", PointCloudSliceMsg, queue_size = 0)
 cloudPublisher = rospy.Publisher("pointCloud", PointCloud2, queue_size = 0)
 
 # instantiate messages to publish
@@ -75,9 +75,9 @@ while not rospy.is_shutdown():
         firstScan()
         first = False
 
-        lsaMsg = LaserScanAngle()
+        lsaMsg = PointCloudSliceMsg()
         lsaMsg.laserScan = currentScan
-        lsaMsg.stepAngle = currentAngle
+        lsaMsg.tiltAngle = currentAngle
         slicePublisher.publish(lsaMsg)
 
         currentScan = None
@@ -136,9 +136,9 @@ while not rospy.is_shutdown():
             # Now we can combine it into one message and publish it as cloudMsg
             print "------- WE HAVE BOTH ANGLE AND SCAN DATA -------"
 
-            lsaMsg = LaserScanAngle()
+            lsaMsg = PointCloudSliceMsg()
             lsaMsg.laserScan = currentScan
-            lsaMsg.stepAngle = currentAngle
+            lsaMsg.tiltAngle = currentAngle
             slicePublisher.publish(lsaMsg)
 
             # Reset the scan and angle data
