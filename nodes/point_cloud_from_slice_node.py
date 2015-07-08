@@ -34,7 +34,8 @@ currentAngle = 0
 
 # Data for calculating the actual distance
 radius = 0.08         # 0.08 meters (80 mm)
-axleHeight = 0.1075   # 0.1075 meters (107.5mm)
+axleHeight = 0.1075   # 0.1075 meters (107.5mm)\
+scanRange = 240       # 240 degree scan range
 
 # initialize ROS node
 rospy.init_node('PC_Slice_Node', anonymous=True)
@@ -58,35 +59,24 @@ def sliceCallback(msg):
     finally:
         sliceBuffMutex.release()
 
-    #print "Message received #%d" % counter
-    #print msg
-
 # Instantiate the subscribers
 scanSubscriber  = rospy.Subscriber("slice", LaserScanAngle, sliceCallback)
 
-def findTrueDist(origDist):
-    global radius
+def cos(angle):
+    rad = math.radians(angle)
+    cosVal = math.cos(rad)
+    return cosVal
 
-    # The math
-    d2 = math.pow(origDist, 2)
-    r2 = math.pow(radius, 2)
-    result = math.sqrt(d2 + r2)
+def sin(angle):
+    rad = math.radians(angle)
+    sinVal = math.sin(rad)
+    return sinVal
 
+def pythag(dist1, dist2):
+    d1 = math.pow(dist1, 2)
+    d2 = math.pow(dist2, 2)
+    result = math.sqrt(d1 + d2)
     return result
-
-def findTrueAngle(origAngle, currRangePoint):
-    global currentAngle
-    global radius
-
-    frac = (currRangePoint / radius)
-    invTan = math.degrees(math.atan(frac))
-
-    floatAngle = float(currentAngle)
-
-    result = invTan + floatAngle
-
-    return result
-
 
 def findRanges(origData):
     global currentRanges
@@ -95,9 +85,6 @@ def findRanges(origData):
 
     ran = origData.find(beg)
     ran2 = origData.find(end)
-
-    #print "FOUND RANGE: -----------------------"
-    #print origData[ran + 1:ran2]
 
     currentRanges = origData[ran + 1:ran2]
 
@@ -112,97 +99,60 @@ def findAngle(origData):
     # Cut the string off so that we only get the angle and not stepAngle
     currentAngle = origData[ang + 11:ang2]
 
-def findX(dist, angle, scanAngle):
-    base = 0.0
-    # Find the base line
-    if angle < 90:
-        rad = math.radians(angle)
-        sinVal = math.sin(rad)
-        base = (dist * sinVal)
-    elif angle == 90:
-        base = dist
-    elif angle > 90:
-        newAng = angle - 90
-        rad = math.radians(newAng)
-        cosVal = math.cos(rad)
-        base = (dist * cosVal)
+def findScanXY(dist, scanAngle):
+    if scanAngle < 30:
+        newScanAng = 30 - scanAngle
+        x = dist * sin(newScanAng) * -1
+        y = dist * cos(newScanAng)
+    elif scanAngle >= 30 and scanAngle <= 210:
+        scanAngle -= 30
+        x = dist * sin(scanAngle)        
+        y = dist * cos(scanAngle)
+    elif scanAngle > 210:
+        newScanAng = scanAngle - 210
+        x = dist * sin(newScanAng) * -1
+        y = dist * cos(newScanAng) * -1
 
-    # Find the x component from there
-    newScanAng = 0.0
-
-    if scanAngle == 90:
-        print "x: %f" % dist
-        return dist
-    elif scanAngle > 90:
-        newScanAng = 180 - scanAngle
-    elif scanAngle < 90:
-        newScanAng = scanAngle
-
-    rad = math.radians(newScanAng)
-    sinVal = math.sin(rad)
-    result = base * sinVal
-    print "x: %f" % result
+    result = [x, y]
     return result
 
-def findY(dist, angle, scanAngle):
-    base = 0.0
-    # Find the base line
-    if angle < 90:
-        rad = math.radians(angle)
-        sinVal = math.sin(rad)
-        base = (dist * sinVal)
-    elif angle == 90:
-        base = dist
-    elif angle > 90:
-        newAng = angle - 90
-        rad = math.radians(newAng)
-        cosVal = math.cos(rad)
-        base = (dist * cosVal)
-
-    # Find the x component from there
-    newScanAng = 0.0
-
-    if scanAngle == 90:
-        print "y: %f" % dist
-        return dist
-    elif scanAngle > 90:
-        newScanAng = 180 - scanAngle
-    elif scanAngle < 90:
-        newScanAng = scanAngle
-
-    rad = math.radians(newScanAng)
-    cosVal = math.cos(rad)
-    result = base * cosVal
-    print "y: %f" % result
+def findLaserXZ(angle):
+    x = radius * sin(angle)
+    z = radius * cos(angle)
+    result = [x, z]
     return result
 
-def findZ(dist, angle, scanAngle):
-    global axleHeight
+def findXYZ(laserXZ, scanXY, angle):
+    if scanXY[0] < 0:
+        # x direction is negative, i.e. go backwards
+        print "X IS NEGATIVE"
+        xOffset = scanXY[0] * cos(angle)
+        zOffset = scanXY[0] * sin(angle) * -1
 
-    if angle < 90:
-        triangleAng = 90 - angle
-        rad = math.radians(triangleAng)
-        sinVal = math.sin(rad)
-        result = axleHeight
-        #print "z: %f" % result
-        result += (dist * sinVal)
-        print "z: %f" % result
-        return result
-    elif angle == 90:
-        result = axleHeight
-        print "z: %f" % result
-        return result
-    elif angle > 90:
-        newAng = angle - 90
-        #print "newAng: %f" % newAng
-        rad = math.radians(newAng)
-        #print "rad: %f" % rad
-        sinVal = math.sin(rad)
-        #print "sinVal: %f" % sinVal
-        result = axleHeight
-        result -= (dist * sinVal)
-        print "z: %f" % result
-        return result
+        print "xOffset: %f" % xOffset
+        print "zOffset: %f" % zOffset
+
+        x = laserXZ[0] + xOffset
+        y = scanXY[1]
+        z = laserXZ[1] + zOffset
+
+        return [x, y, z]
+    else:
+        # x direction is positive, i.e. go forwards
+        print "X IS POSITIVE"
+        newAngle = 90 - angle
+        xOffset = scanXY[0] * sin(newAngle)
+        zOffset = scanXY[0] * cos(newAngle)
+
+        print "xOffset: %f" % xOffset
+        print "zOffset: %f" % zOffset
+
+        x = laserXZ[0] + xOffset
+        y = scanXY[1]
+        z = laserXZ[1] - zOffset
+
+        return [x, y, z]
+
 
 def analyzeMsg():
     global currentSlice
@@ -228,15 +178,12 @@ def analyzeMsg():
 
     # Return only the ranges: [] part of the LaserScanAngle data
     findRanges(currentSliceString)
-    #print currentRanges
 
     # Return only the step angle part of the LaserScanAngle data
     findAngle(currentSliceString)
-    print currentAngle
 
     # Find the number of data points in each scan by the commas
     numberScan = currentRanges.count(",", 0, len(currentRanges))
-    print numberScan
 
     start = 0
 
@@ -254,38 +201,37 @@ def analyzeMsg():
 
         # Check if the string is infinity or not availible
         if not currentRanges[start:end].startswith('inf') and not currentRanges[start:end].startswith('nan'):
-            #print "Finding from %d to %d" % (start, end)
-            #print currentRanges[start:end]
+
             currentRangePoint = float(currentRanges[start:end])
-            #print currentRangePoint
-
-            # Here's where we do the math for converting the points
-            # from a distorted perspective to a normal one
-
-            print "-------------------------------"
-
-            #print "Laser distance: %.12f" % currentRangePoint
-            trueDist = findTrueDist(currentRangePoint)
-            print "Actual distance: %.12f" % trueDist
 
             floatAngle = float(currentAngle)
-            #print "Laser Angle: %f" % floatAngle
-            trueAngle = findTrueAngle(floatAngle, currentRangePoint)
-            print "Actual Angle is %.12f" % trueAngle
 
             aFloat = float(a)
             numberScanFloat = float(numberScan)
-            scanAngle = (aFloat / numberScanFloat) * 180
-            print "Scan angle is: %.12f" % scanAngle
+            scanAngle = (aFloat / numberScanFloat) * scanRange
 
-            # Set these variables as floats
-            x = 0.0
-            y = 0.0
-            z = 0.0
+            print "---------------------------"
+            scanXY = findScanXY(currentRangePoint, scanAngle)
+            print "dist: %f" % currentRangePoint
+            print "scanAngle: %f" % scanAngle
+            print "scan x: %f" % scanXY[0]
+            print "scan y: %f" % scanXY[1]
 
-            x = findX(trueDist, trueAngle, scanAngle)
-            y = findY(trueDist, trueAngle, scanAngle)
-            z = findZ(trueDist, trueAngle, scanAngle)
+            laserXZ = findLaserXZ(floatAngle)
+            print "Angle: %f" % floatAngle
+            print "laserX: %f" % laserXZ[0]
+            print "laserZ: %f" % laserXZ[1]
+
+            XYZ = findXYZ(laserXZ, scanXY, floatAngle)
+
+            x = XYZ[0]
+            y = XYZ[1]
+            z = XYZ[2]
+
+            print "~~~~"
+            print "x: %f" % x
+            print "y: %f" % y
+            print "z: %f" % z
 
             currPoint = [x, y, z]
             points.append(currPoint)
@@ -296,7 +242,7 @@ def analyzeMsg():
 # Create a rate control object
 rate = rospy.Rate(CYCLE_FREQUENCY)
 
-print "Started PC Slice Node at %d Hz." % CYCLE_FREQUENCY
+print "Started PC Slice Node V2 at %d Hz." % CYCLE_FREQUENCY
 
 while not rospy.is_shutdown():
     # Main loop

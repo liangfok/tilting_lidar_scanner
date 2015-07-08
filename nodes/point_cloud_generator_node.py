@@ -64,8 +64,6 @@ def firstScan():
             print "PCG: The first scan is {0}".format(currentScan)
             # Now we can leave this loop
             done = True
-
-        rate.sleep()
     # We have finished our first scan and can now go on to the main loop
 
 # Create a rate control object
@@ -95,15 +93,22 @@ while not rospy.is_shutdown():
         print "PCG: Waiting for angle..."
         done = False
         while not done and not rospy.is_shutdown():
+
+            # Very temporary -------- REMOVE ME ----------
+            if currentAngle == 0.0:
+                print "I HAVE FINISHED!!!"
+                time.sleep(200)
+            # Very temporary -------- REMOVE ME ----------
+
             if currentAngle == None:
                 print "PCG: Did not receive current angle yet..."
             else:
                 print "PCG: The current angle is {0}".format(currentAngle)
                 done = True
 
-            rate.sleep()
-
         currentScan = None
+
+        #time.sleep(1)
 
         # Wait until we receive a scan from the LiDAR scanner
         print "PCG: Waiting for LiDAR scan..."
@@ -117,7 +122,6 @@ while not rospy.is_shutdown():
                 print "We have received SCAN data!"
                 done = True
 
-            rate.sleep()
 
         if currentAngle != None and currentScan != None:
             #print "PCG: Got both laser scan data and angle data!"
