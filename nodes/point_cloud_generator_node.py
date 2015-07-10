@@ -149,7 +149,7 @@ while not rospy.is_shutdown():
             stepPublisher.publish(stepMsg)
             print "PCG: Take a step."
 
-    cloudPublisher.publish(cloudMsg)
+    # cloudPublisher.publish(cloudMsg)
 
     rate.sleep()
 
