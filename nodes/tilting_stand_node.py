@@ -46,7 +46,7 @@ def readEntireLine():
 
             if "\n" in inputStringBuffer:
                 indexOfReturn = inputStringBuffer.index("\n")
-                
+
                 # Extract the data from the beginning of the string
                 # buffer to the location of the carrage return
                 result = inputStringBuffer[0:indexOfReturn + 1]
@@ -68,12 +68,12 @@ def openSerialPort():
 
     # Clear the serial port's input buffer so we don't receive
     # any garbage during first read
-    ser.flushInput() 
-    
+    ser.flushInput()
+
     print "Connecting..."
     time.sleep(2)
     print "Connected"
-    
+
     if ser.isOpen():
         print "Port Open"
         return True
@@ -85,16 +85,16 @@ def initArduino():
 
     ser.write('5\n')
     # ser.flush()
-    
-    print "stepAngle: wrote to serial: 5"
-    
+
+    print "initArduino: wrote to serial: 5"
+
     # time.sleep(.1)
     done = False
     while not done:
         data = readEntireLine() #[:-2] #the last bit gets rid of the new-line chars
-        print "stepAngle: Recieved data: \"{0}\"".format(data)
+        print "initArduino: Recieved data: \"{0}\"".format(data)
         if data[len(data)-3:-2] == "T":
-            print "stepAngle: Got confirmation that Arduino started!"
+            print "initArduino: Got confirmation that Arduino started!"
             done = True
 
         time.sleep(0.1) # 10Hz
@@ -104,25 +104,25 @@ def initArduino():
 def takeOneStep():
     global ser
     global newAngle
-    
+
     stepCounter = 0
 
     # Tell the stepper motor to take a step
     # This is signified by a 3
     ser.write('3\n')
-    print "stepAngle: Python told Arduino to move one step"
-    
+    print "takeOneStep: Python told Arduino to move one step"
+
     done = False
     while not done:
         data = readEntireLine() #the last bit gets rid of the new-line chars
         if data:
-            print "stepAngle: Recieved data: \"{0}\"".format(data)
+            print "takeOneStep: Recieved data: \"{0}\"".format(data)
             if data.startswith('AA'):
                 print "-----------FOUND ANGLE DATA!!!!!!"
                 newAngle = data[2:]
                 print newAngle
             elif data[len(data)-3:-2] == "F":
-                print "stepAngle: finished moving one step"
+                print "takeOneStep: finished moving one step"
                 #time.sleep(.1)
                 done = True
 
@@ -145,7 +145,7 @@ if openSerialPort():
 
                 takeOneStep()
 
-                currentAngle = float(newAngle) 
+                currentAngle = float(newAngle)
 
                 stepCommand = None # So we can detect when a new step command arrives.
 
