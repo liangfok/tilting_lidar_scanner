@@ -74,20 +74,23 @@ def processSliceBuffer():
                      "world")
     # print "PCFS: Processing slice: {0}".format(currSlice)
 
-    # angleMin = currSlice.laserScan.angle_min
-    # angleMax = currSlice.laserScan.angle_max
-    angleMin = math.radians(-120)
-    angleMax = math.radians(120)
+    angleMin = currSlice.laserScan.angle_min
+    angleMax = currSlice.laserScan.angle_max
 
-    # angleInc = currSlice.laserScan.angle_increment
-    angleInc = (angleMax - angleMin) / len(currSlice.laserScan.ranges)
+    # angleMin = math.radians(-120)
+    # angleMax = math.radians(120)
+
+    angleInc = currSlice.laserScan.angle_increment
+    theoreticalAngleInc = (angleMax - angleMin) / len(currSlice.laserScan.ranges)
 
     thetaT = math.radians(currSlice.tiltAngle)
 
     x0 = TILT_RADIUS * math.sin(thetaT)
     z0 = TILT_RADIUS * math.cos(thetaT)
 
-    for ii in range(0, len(currSlice.laserScan.ranges)):
+    numSamples = len(currSlice.laserScan.ranges)
+
+    for ii in range(0, numSamples):
         thetaS = angleMin + ii * angleInc
         distS = currSlice.laserScan.ranges[ii]
 
@@ -105,15 +108,19 @@ def processSliceBuffer():
             # print "PCFS: Values:\n"\
             #       "  - angleMin / angleMax: {0} / {1} ({2} / {3})\n"\
             #       "  - angleInc: {4} ({5})\n"\
-            #       "  - tiltAngle: {6} ({7})\n"\
+            #       "  - theoretical angleInc: {6} ({7})\n"\
+            #       "  - number of samples: {8}\n"\
+            #       "  - tiltAngle: {9} ({10})\n"\
             #       "  - sensor coordinate frame:\n"\
-            #       "     - theta {8} ({9})\n"\
-            #       "     - dist: {10}\n"\
-            #       "     - position: ({11}, {12}, {13})\n"\
+            #       "     - theta {11} ({12})\n"\
+            #       "     - dist: {13}\n"\
+            #       "     - position: ({14}, {15}, {16})\n"\
             #       "  - base coordinate frame:\n"\
-            #       "     - position: ({14}, {15}, {16})\n".format(
+            #       "     - position: ({17}, {18}, {19})\n".format(
             #         angleMin, angleMax, math.degrees(angleMin), math.degrees(angleMax),
             #         angleInc, math.degrees(angleInc),
+            #         theoreticalAngleInc, math.degrees(theoreticalAngleInc),
+            #         numSamples,
             #         thetaT, math.degrees(thetaT),
             #         thetaS, math.degrees(thetaS), distS, xS, yS, zS,
             #         xB, yB, zB)
