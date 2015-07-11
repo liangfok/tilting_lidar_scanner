@@ -65,6 +65,13 @@ def processSliceBuffer():
     if not processSlice:
         return
 
+    currSlice.laserScan.header.stamp = rospy.Time.now()
+    slicePublisher.publish(currSlice.laserScan)
+    br.sendTransform((0, 0, 0),
+                     tf.transformations.quaternion_from_euler(0, 0, 0),
+                     rospy.Time.now(),
+                     "laser",
+                     "world")
     # print "PCFS: Processing slice: {0}".format(currSlice)
 
     # angleMin = currSlice.laserScan.angle_min
@@ -79,11 +86,6 @@ def processSliceBuffer():
 
     x0 = TILT_RADIUS * math.sin(thetaT)
     z0 = TILT_RADIUS * math.cos(thetaT)
-    # print "PCFS: Values:\n"\
-    #       "  - angleMin: {0}\n"\
-    #       "  - angleMax: {1}\n"\
-    #       "  - angleInc: {2}\n"\
-    #       "  - tiltAngle: {3}\n".format(angleMin, angleMax, angleInc, tiltAngle)
 
     for ii in range(0, len(currSlice.laserScan.ranges)):
         thetaS = angleMin + ii * angleInc
@@ -100,21 +102,21 @@ def processSliceBuffer():
             yB = yS
             zB = xS * math.sin(-thetaT) + z0
 
-            print "PCFS: Values:\n"\
-                  "  - angleMin / angleMax: {0} / {1} ({2} / {3})\n"\
-                  "  - angleInc: {4} ({5})\n"\
-                  "  - tiltAngle: {6} ({7})\n"\
-                  "  - sensor coordinate frame:\n"\
-                  "     - theta {8} ({9})\n"\
-                  "     - dist: {10}\n"\
-                  "     - position: ({11}, {12}, {13})\n"\
-                  "  - base coordinate frame:\n"\
-                  "     - position: ({14}, {15}, {16})\n".format(
-                    angleMin, angleMax, math.degrees(angleMin), math.degrees(angleMax),
-                    angleInc, math.degrees(angleInc),
-                    thetaT, math.degrees(thetaT),
-                    thetaS, math.degrees(thetaS), distS, xS, yS, zS,
-                    xB, yB, zB)
+            # print "PCFS: Values:\n"\
+            #       "  - angleMin / angleMax: {0} / {1} ({2} / {3})\n"\
+            #       "  - angleInc: {4} ({5})\n"\
+            #       "  - tiltAngle: {6} ({7})\n"\
+            #       "  - sensor coordinate frame:\n"\
+            #       "     - theta {8} ({9})\n"\
+            #       "     - dist: {10}\n"\
+            #       "     - position: ({11}, {12}, {13})\n"\
+            #       "  - base coordinate frame:\n"\
+            #       "     - position: ({14}, {15}, {16})\n".format(
+            #         angleMin, angleMax, math.degrees(angleMin), math.degrees(angleMax),
+            #         angleInc, math.degrees(angleInc),
+            #         thetaT, math.degrees(thetaT),
+            #         thetaS, math.degrees(thetaS), distS, xS, yS, zS,
+            #         xB, yB, zB)
 
             currPoint = [xB, yB, zB]
             points.append(currPoint)
@@ -126,6 +128,7 @@ if __name__ == "__main__":
 
     # Instantiate a publisher for the sensor_msgs.PointCloud2 message
     cloudPublisher = rospy.Publisher("pointCloud", PointCloud2, queue_size = 0)
+    slicePublisher = rospy.Publisher("laserScan", LaserScan, queue_size = 0)
 
     # Instantiate a tf broadcaster for transforming world to base
     br = tf.TransformBroadcaster()
