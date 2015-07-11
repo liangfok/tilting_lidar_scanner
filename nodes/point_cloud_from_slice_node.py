@@ -96,9 +96,9 @@ def processSliceBuffer():
             zS = 0
 
             # Convert from sensor coordinate frame to the base coordinate frame
-            xB = xS * math.sin(thetaT) + x0
+            xB = xS * math.cos(-thetaT) + x0
             yB = yS
-            zB = xS * math.cos(thetaT) + z0
+            zB = xS * math.sin(-thetaT) + z0
 
             print "PCFS: Values:\n"\
                   "  - angleMin / angleMax: {0} / {1} ({2} / {3})\n"\
@@ -149,7 +149,7 @@ if __name__ == "__main__":
 
         # Broadcast world-to-base transform
         br.sendTransform((0, 0, AXLE_HEIGHT),
-                     tf.transformations.quaternion_from_euler(0, math.radians(90), 0),  # rotate 90 degrees about Y axis
+                     tf.transformations.quaternion_from_euler(0, 0, 0),
                      rospy.Time.now(),
                      "base",
                      "world")
