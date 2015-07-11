@@ -27,6 +27,7 @@ CYCLE_FREQUENCY = 1
 # Define some constants
 TILT_RADIUS = 0.08         # 0.08 meters
 AXLE_HEIGHT = 1.1075       # 1.1075 meters
+ANGLE_INCREMENT_MAX_DIFF_THRESHOLD = 1e-4
 
 # A buffer for storing the points in the point cloud
 points = []
@@ -74,15 +75,23 @@ def processSliceBuffer():
                      "world")
     # print "PCFS: Processing slice: {0}".format(currSlice)
 
+    # Compute the min and max angle within a slice
     angleMin = currSlice.laserScan.angle_min
     angleMax = currSlice.laserScan.angle_max
 
     # angleMin = math.radians(-120)
     # angleMax = math.radians(120)
 
+    # Compute the angle increment and theoretical angle increment.
     angleInc = currSlice.laserScan.angle_increment
     theoreticalAngleInc = (angleMax - angleMin) / len(currSlice.laserScan.ranges)
 
+    # Check if the specified angle increment matches the theoretical angle increment.
+    if abs(angleInc - theoreticalAngleInc) > ANGLE_INCREMENT_MAX_DIFF_THRESHOLD:
+        rospy.logwarn("PCFS: Specified angle increment of {0} differs from theoretical angle increment of {1}. Diff is {2}.".format(
+            angleInc, theoreticalAngleInc, abs(angleInc - theoreticalAngleInc)))
+
+    # Obtain the tilt angle
     thetaT = math.radians(currSlice.tiltAngle)
 
     x0 = TILT_RADIUS * math.sin(thetaT)
