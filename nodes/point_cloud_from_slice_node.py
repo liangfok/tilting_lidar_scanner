@@ -67,8 +67,14 @@ def processSliceBuffer():
 
     # print "PCFS: Processing slice: {0}".format(currSlice)
 
-    angleMin = currSlice.laserScan.angle_min
-    angleInc = currSlice.laserScan.angle_increment
+    # angleMin = currSlice.laserScan.angle_min
+    # angleMax = currSlice.laserScan.angle_max
+    angleMin = math.radians(-120)
+    angleMax = math.radians(120)
+
+    # angleInc = currSlice.laserScan.angle_increment
+    angleInc = (angleMax - angleMin) / len(currSlice.laserScan.ranges)
+
     thetaT = math.radians(currSlice.tiltAngle)
 
     x0 = TILT_RADIUS * math.sin(thetaT)
@@ -93,6 +99,22 @@ def processSliceBuffer():
             xB = xS * math.sin(thetaT) + x0
             yB = yS
             zB = xS * math.cos(thetaT) + z0
+
+            print "PCFS: Values:\n"\
+                  "  - angleMin / angleMax: {0} / {1} ({2} / {3})\n"\
+                  "  - angleInc: {4} ({5})\n"\
+                  "  - tiltAngle: {6} ({7})\n"\
+                  "  - sensor coordinate frame:\n"\
+                  "     - theta {8} ({9})\n"\
+                  "     - dist: {10}\n"\
+                  "     - position: ({11}, {12}, {13})\n"\
+                  "  - base coordinate frame:\n"\
+                  "     - position: ({14}, {15}, {16})\n".format(
+                    angleMin, angleMax, math.degrees(angleMin), math.degrees(angleMax),
+                    angleInc, math.degrees(angleInc),
+                    thetaT, math.degrees(thetaT),
+                    thetaS, math.degrees(thetaS), distS, xS, yS, zS,
+                    xB, yB, zB)
 
             currPoint = [xB, yB, zB]
             points.append(currPoint)
