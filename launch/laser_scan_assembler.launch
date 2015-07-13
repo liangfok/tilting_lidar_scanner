@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<launch>
+	<!-- See: http://wiki.ros.org/laser_assembler -->
+
+    <param name="laser_scan_assembler/fixed_frame" type="str" value="world" />
+    <param name="laser_scan_assembler/max_scans" type="int" value="10000" />'
+    <param name="laser_scan_assembler/tf_cache_time_secs" type="double" value="10000.0" />'
+    <node pkg="laser_assembler" type="laser_scan_assembler" name="laser_scan_assembler" output="screen" />
+    <node pkg="pcg_node" type="adapter_to_laser_assembler.py" name="adapter_to_laser_assembler" output="screen" />
+</launch>
