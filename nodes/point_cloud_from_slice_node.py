@@ -27,6 +27,7 @@ CYCLE_FREQUENCY = 1
 # Define some constants
 TILT_RADIUS = 0.08         # 0.08 meters
 AXLE_HEIGHT = 1.1075       # 1.1075 meters
+ANGLE_INCREMENT_MAX_DIFF_THRESHOLD = 1e-4
 
 # A buffer for storing the points in the point cloud
 points = []
@@ -65,21 +66,40 @@ def processSliceBuffer():
     if not processSlice:
         return
 
+    currSlice.laserScan.header.stamp = rospy.Time.now()
+    slicePublisher.publish(currSlice.laserScan)
+    br.sendTransform((0, 0, 0),
+                     tf.transformations.quaternion_from_euler(0, 0, 0),
+                     rospy.Time.now(),
+                     "laser",
+                     "world")
     # print "PCFS: Processing slice: {0}".format(currSlice)
 
+    # Compute the min and max angle within a slice
     angleMin = currSlice.laserScan.angle_min
+    angleMax = currSlice.laserScan.angle_max
+
+    # angleMin = math.radians(-120)
+    # angleMax = math.radians(120)
+
+    # Compute the angle increment and theoretical angle increment.
     angleInc = currSlice.laserScan.angle_increment
+    theoreticalAngleInc = (angleMax - angleMin) / len(currSlice.laserScan.ranges)
+
+    # Check if the specified angle increment matches the theoretical angle increment.
+    if abs(angleInc - theoreticalAngleInc) > ANGLE_INCREMENT_MAX_DIFF_THRESHOLD:
+        rospy.logwarn("PCFS: Specified angle increment of {0} differs from theoretical angle increment of {1}. Diff is {2}.".format(
+            angleInc, theoreticalAngleInc, abs(angleInc - theoreticalAngleInc)))
+
+    # Obtain the tilt angle
     thetaT = math.radians(currSlice.tiltAngle)
 
     x0 = TILT_RADIUS * math.sin(thetaT)
     z0 = TILT_RADIUS * math.cos(thetaT)
-    # print "PCFS: Values:\n"\
-    #       "  - angleMin: {0}\n"\
-    #       "  - angleMax: {1}\n"\
-    #       "  - angleInc: {2}\n"\
-    #       "  - tiltAngle: {3}\n".format(angleMin, angleMax, angleInc, tiltAngle)
 
-    for ii in range(0, len(currSlice.laserScan.ranges)):
+    numSamples = len(currSlice.laserScan.ranges)
+
+    for ii in range(0, numSamples):
         thetaS = angleMin + ii * angleInc
         distS = currSlice.laserScan.ranges[ii]
 
@@ -90,9 +110,29 @@ def processSliceBuffer():
             zS = 0
 
             # Convert from sensor coordinate frame to the base coordinate frame
-            xB = xS * math.sin(thetaT) + x0
+            xB = xS * math.cos(-thetaT) + x0
             yB = yS
-            zB = xS * math.cos(thetaT) + z0
+            zB = xS * math.sin(-thetaT) + z0
+
+            # print "PCFS: Values:\n"\
+            #       "  - angleMin / angleMax: {0} / {1} ({2} / {3})\n"\
+            #       "  - angleInc: {4} ({5})\n"\
+            #       "  - theoretical angleInc: {6} ({7})\n"\
+            #       "  - number of samples: {8}\n"\
+            #       "  - tiltAngle: {9} ({10})\n"\
+            #       "  - sensor coordinate frame:\n"\
+            #       "     - theta {11} ({12})\n"\
+            #       "     - dist: {13}\n"\
+            #       "     - position: ({14}, {15}, {16})\n"\
+            #       "  - base coordinate frame:\n"\
+            #       "     - position: ({17}, {18}, {19})\n".format(
+            #         angleMin, angleMax, math.degrees(angleMin), math.degrees(angleMax),
+            #         angleInc, math.degrees(angleInc),
+            #         theoreticalAngleInc, math.degrees(theoreticalAngleInc),
+            #         numSamples,
+            #         thetaT, math.degrees(thetaT),
+            #         thetaS, math.degrees(thetaS), distS, xS, yS, zS,
+            #         xB, yB, zB)
 
             currPoint = [xB, yB, zB]
             points.append(currPoint)
@@ -104,6 +144,7 @@ if __name__ == "__main__":
 
     # Instantiate a publisher for the sensor_msgs.PointCloud2 message
     cloudPublisher = rospy.Publisher("pointCloud", PointCloud2, queue_size = 0)
+    slicePublisher = rospy.Publisher("laserScan", LaserScan, queue_size = 0)
 
     # Instantiate a tf broadcaster for transforming world to base
     br = tf.TransformBroadcaster()
@@ -127,7 +168,7 @@ if __name__ == "__main__":
 
         # Broadcast world-to-base transform
         br.sendTransform((0, 0, AXLE_HEIGHT),
-                     tf.transformations.quaternion_from_euler(0, math.radians(90), 0),  # rotate 90 degrees about Y axis
+                     tf.transformations.quaternion_from_euler(0, 0, 0),
                      rospy.Time.now(),
                      "base",
                      "world")
