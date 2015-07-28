@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 
+'''
+A test program for creating sensor_msgs/PointCloud2 points.
+'''
+
 import rospy                        #for interacting with ROS topics and parameters
 from std_msgs.msg import Header
-from sensor_msgs.msg import PointCloud2, PointField
+from sensor_msgs.msg import PointCloud2
 
 import math
 import random

@@ -1,5 +1,17 @@
 #!/usr/bin/env python
 
+'''
+A ROS node for communicating with the Arduino MCU on the tilting stand node.
+
+It subscribes to ROS topic "step" and publishes to ROS topic "angle".
+
+Each time it receives a message on ROS topic "step", it sends a message to the
+Arduino asking it to take a step.
+
+The Arduino tells this node its current angle.
+It continuously publishes the current angle of the tilting stand node.
+'''
+
 import rospy                        #for interacting with ROS topics and parameters
 import sys, getopt                  #for parameters and sys.exit()
 from std_msgs.msg import Float64, Int32

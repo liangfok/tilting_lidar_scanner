@@ -1,5 +1,12 @@
 #!/usr/bin/env python
 
+'''
+Creates a sensor_msgs/PointCloud2 message based on a set of X, Y, Z points.
+
+Takes a input a header, which defines a timestamp and the base frame,
+and a sequence of (X, Y, Z) points.
+'''
+
 import rospy                        #for interacting with ROS topics and parameters
 from std_msgs.msg import Header
 from sensor_msgs.msg import PointCloud2, PointField

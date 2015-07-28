@@ -1,5 +1,16 @@
 #!/usr/bin/env python
 
+'''
+Coordinates the movements of the tilting stand and the gathering of laser scan data.
+Saves the angle and laser scan data into a PointCloudSliceMsg and publishes this message.
+
+Obtains the laser scan by subscribing to ROS topic "scan".
+Obtains the current tilt angle by subscribing to ROS topic "angle".
+
+Controls when the tilting stand takes a step in tilt angle by publishing to ROS topic "step".
+Gathers the laser scan and angle information and publishes them onto ROS topic "slice".
+'''
+
 import rospy                        #for interacting with ROS topics and parameters
 import sys, getopt                  #for parameters and sys.exit()
 from std_msgs.msg import Float64, Int32
@@ -21,7 +32,7 @@ rospy.init_node('PC_Generator', anonymous=True)
 # instantiate publisher
 stepPublisher = rospy.Publisher("step", Int32, queue_size = 0)
 slicePublisher = rospy.Publisher("slice", PointCloudSliceMsg, queue_size = 0)
-cloudPublisher = rospy.Publisher("pointCloud", PointCloud2, queue_size = 0)
+# cloudPublisher = rospy.Publisher("pointCloud", PointCloud2, queue_size = 0)
 
 # instantiate messages to publish
 stepMsg = Int32()

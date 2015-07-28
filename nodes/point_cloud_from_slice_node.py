@@ -1,5 +1,14 @@
 #!/usr/bin/env python
 
+'''
+Computes a point cloud based on slice information.
+
+Obtains slice information from ROS topic /slice.
+
+Publishes the laser scans onto ROS topic laserScan, and the
+point cloud onto ROS topic pointCloud.
+'''
+
 import rospy                        #for interacting with ROS topics and parameters
 # import sys, getopt                  #for parameters and sys.exit()
 from sensor_msgs.msg import PointCloud2, LaserScan
