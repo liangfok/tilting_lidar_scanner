@@ -87,7 +87,7 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
+  INCLUDE_DIRS include
 #  LIBRARIES pcg_node
   CATKIN_DEPENDS roscpp rospy std_msgs message_runtime
 #  DEPENDS system_lib
@@ -99,8 +99,8 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-# include_directories(include)
 include_directories(
+  include
   ${catkin_INCLUDE_DIRS}
 )
 
@@ -119,6 +119,7 @@ add_dependencies(TiltingLIDARScanner pcg_node_generate_messages_cpp)
 ## Specify libraries to link a library or executable target against
 target_link_libraries(TiltingLIDARScanner
     ${catkin_LIBRARIES}
+    serial  # assumes system has libserial installed ($ sudo apt-get install libserial-dev)
 )
 
 #############
