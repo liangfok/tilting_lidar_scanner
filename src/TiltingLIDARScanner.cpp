@@ -14,8 +14,21 @@
 #define QUEUE_SIZE 1
 #define LATCHED false
 
+// A command message to the micro-controller consists of two bytes:
+// a start byte followed by a command byte.
+#define CMD_MSG_SIZE 2
+#define CMD_START_BYTE 0x55
+
+// Valid commands
 #define CMD_STOP_SCAN 0
 #define CMD_START_SCAN 1
+#define CMD_RECALIBRATE 2
+
+// The activation state of this node
+#define STATE_DISABLED 0
+#define STATE_ENABLED 1
+#define STATE_RECALIBRATE 2
+
 
 using LibSerial::SerialStreamBuf;
 
@@ -24,7 +37,8 @@ namespace tiltingLIDARScanner {
 TiltingLIDARScanner::TiltingLIDARScanner() :
   serialPortName("/dev/ttyACM0"),
   laserScanTopic("/scan"),
-  cmd(CMD_STOP_SCAN)
+  state(STATE_DISABLED)
+
 {
 }
 
@@ -93,31 +107,47 @@ bool TiltingLIDARScanner::init()
     // Initialize the ROS topic subscribers
     nh.getParam("laserScanTopic", laserScanTopic);
     ROS_INFO_STREAM("TiltingLIDARScanner::init: Subscribing to laser scan topic \"" << laserScanTopic << "\"");
-    laserScanSubscriber.subscribe(laserScanTopic, boost::bind( & TiltingLIDARScanner::laserScanCallback, this, _1));
 
-    cmdSubscriber.subscriber("cmd", boost::bind( & TiltingLIDARScanner::cmdCallback, this, _1));
+    laserScanSubscriber = nh.subscribe(laserScanTopic, QUEUE_SIZE,
+        & TiltingLIDARScanner::laserScanCallback, this);
+
+    cmdSubscriber = nh.subscribe("cmd", QUEUE_SIZE,
+        & TiltingLIDARScanner::cmdCallback, this);
+
     return true;
+}
+
+void TiltingLIDARScanner::sendRecalibrateCmd()
+{
+    cmd[0] = CMD_START_BYTE;
+    cmd[1] = CMD_RECALIBRATE;
+    serialPort.write(cmd, CMD_MSG_SIZE);
+    serialPort.flush();
 }
 
 bool TiltingLIDARScanner::start()
 {
-    int localCmd;
+    int currState;
 
     ros::Rate loop_rate(100);
     while (ros::ok())
     {
-        cmdMutex.lock();
-        localCmd = cmd;
-        cmdMutex.unlock();
+        stateMutex.lock();
+        currState = state;
+        if (state == STATE_RECALIBRATE)
+            state = STATE_DISABLED;
+        stateMutex.unlock();
 
-        if (localCmd == CMD_START_SCAN)
+        if (currState == STATE_ENABLED)
         {
-
+            // 
         }
-        else
+        else if (currState == STATE_DISABLED)
         {
-
+            // Don't do anything
         }
+        else if (currState == STATE_RECALIBRATE)
+            sendRecalibrateCmd();
 
         ros::spinOnce();
         loop_rate.sleep();
@@ -132,18 +162,24 @@ bool TiltingLIDARScanner::stop()
     return true;
 }
 
-void TiltingLIDARScanner::laserScanCallback(const boost::shared_ptr<sensor_msgs::LaserScan const> & scan)
+void TiltingLIDARScanner::laserScanCallback(const sensor_msgs::LaserScan & scan)
 {
     scanMutex.lock();
     this->laserScan = scan;
+    // ROS_INFO_STREAM("TiltingLIDARScanner::laserScanCallback: Received laser scan at time " << scan.header.stamp);
     scanMutex.unlock();
 }
 
-void TiltingLIDARScanner::cmdCallback(const boost::shared_ptr<std_msgs::Int32 const> & cmd)
+void TiltingLIDARScanner::cmdCallback(const std_msgs::Int32 & cmd)
 {
-    cmdMutex.lock();
-    this->cmd = cmd;
-    cmdMutex.unlock();
+    stateMutex.lock();
+    if (cmd.data == CMD_START_SCAN)
+        state = STATE_ENABLED;
+    else if (cmd.data == CMD_STOP_SCAN)
+        state = STATE_DISABLED;
+    else if (cmd.data == CMD_RECALIBRATE)
+        state = STATE_RECALIBRATE;
+    stateMutex.unlock();
 }
 
 } // namespace tiltingLIDARScanner

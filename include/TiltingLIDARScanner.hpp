@@ -22,6 +22,11 @@
 #define __TILTING_LIDAR_SCANNER_HPP__
 
 #include "ros/ros.h"
+
+#include "sensor_msgs/LaserScan.h"
+#include "sensor_msgs/PointCloud2.h"
+#include "std_msgs/Int32.h"
+
 #include <mutex>
 #include <SerialStream.h>
 #include <SerialStreamBuf.h>
@@ -29,8 +34,7 @@
 namespace tiltingLIDARScanner {
 
 /*!
- * A class that provides the main method for launching a ControlIt!
- * controller.
+ * The main ROS node for controlling the TiltingLIDARScanner.
  */
 class TiltingLIDARScanner
 {
@@ -73,7 +77,19 @@ private:
      *
      * \param scan A message containing the laser scan data.
      */
-    void laserScanCallback(const boost::shared_ptr<sensor_msgs::LaserScan const> & scan);
+    void laserScanCallback(const sensor_msgs::LaserScan & scan);
+
+    /*!
+     * The callback function for commands issued to this node.
+     *
+     * \param cmd The command.
+     */
+    void cmdCallback(const std_msgs::Int32 & cmd);
+
+    /*!
+     * Issues a recalibrate command to the Arduino microcontroller.
+     */
+    void sendRecalibrateCmd();
 
     /*!
      * The ROS node handle.
@@ -106,20 +122,27 @@ private:
     ros::Subscriber laserScanSubscriber;
 
     /*!
+     * The ROS topic subscriber for laser scan data.
+     */
+    ros::Subscriber cmdSubscriber;
+
+    /*!
      * Stores the most recently received laser scan.
      */
     sensor_msgs::LaserScan laserScan;
 
     /*!
-     * The command.
+     * The state of this node, either STATE_ENABLED or STATE_DISABLED.
      */
-    int cmd;
+    int state;
 
     /*!
      * Mutexes for protecting variables that are shared between the ROS topic
      * subscriber callback thread and the main thread.
      */
-    std::mutex scanMutex, cmdMutex;
+    std::mutex scanMutex, stateMutex;
+
+    char cmd[2];
 };
 
 } // namespace tiltingLIDARScanner
