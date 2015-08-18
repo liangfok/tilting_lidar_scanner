@@ -113,7 +113,6 @@ bool TiltingLIDARScanner::init()
 
     // Initialize the ROS topic publishers
     slicePublisher = nh.advertise<pcg_node::PointCloudSliceMsg>("slices", QUEUE_SIZE, LATCHED);
-    pcPublisher = nh.advertise<sensor_msgs::PointCloud2>("pointCloud", QUEUE_SIZE, LATCHED);
 
     // Initialize the ROS topic subscribers
     nh.getParam("laserScanTopic", laserScanTopic);

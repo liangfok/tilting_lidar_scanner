@@ -60,13 +60,13 @@ public:
     /*!
      * Starts the tilting LIDAR scanner.
      *
-     * \return Whether the execution was successful.
+     * \return Whether the start was successful.
      */
     bool start();
 
     /*!
      * Stops the tilting LIDAR sensor. This should be called
-     * before the program exist.
+     * before the program exits.
      */
     bool stop();
 
@@ -119,7 +119,7 @@ private:
     /*!
      * The point cloud slice publisher and point cloud publisher.
      */
-    ros::Publisher slicePublisher, pcPublisher;
+    ros::Publisher slicePublisher;
 
     /*!
      * The serial port on which the Arduino is connected.
@@ -181,11 +181,6 @@ private:
      * The current angle of the tilting LIDAR platform.
      */
     double currAngle;
-
-    /*!
-     * The message for holding the point cloud.
-     */
-    sensor_msgs::PointCloud2 pointCloudMsg;
 };
 
 } // namespace tiltingLIDARScanner
