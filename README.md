@@ -10,3 +10,11 @@ To start the nodes:
 To make the tilting LIDAR scanner perform a recalibration routine:
 
     $ rostopic pub --once /tilting_lidar_scanner/cmd std_msgs/Int32 '{data: 2}'
+
+To start point cloud generation:
+
+    $ rostopic pub --once /tilting_lidar_scanner/cmd std_msgs/Int32 '{data: 1}'
+
+To stop point cloud generation:
+
+    $ rostopic pub --once /tilting_lidar_scanner/cmd std_msgs/Int32 '{data: 0}'

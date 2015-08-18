@@ -26,6 +26,7 @@
 #include "sensor_msgs/LaserScan.h"
 #include "sensor_msgs/PointCloud2.h"
 #include "std_msgs/Int32.h"
+#include "pcg_node/PointCloudSliceMsg.h"
 
 #include <mutex>
 #include <SerialStream.h>
@@ -88,8 +89,27 @@ private:
 
     /*!
      * Issues a recalibrate command to the Arduino microcontroller.
+     *
+     * \param command The command to send.
      */
-    void sendRecalibrateCmd();
+    void sendMCUCmd(char command);
+
+    /*
+     * Reads the serial port for messages from the microcontroller.
+     *
+     * \return Whether a message from the microcontroller was
+     * received.
+     */
+    bool rcvMCUMsg();
+
+    /*!
+     * Obtain a single slice of the point cloud.
+     * This involves (1) telling the micro-controller to tilt
+     * the stand by one step, (2) obtaining the current tilt angle
+     * from the stand, (3) obtaining the current laser scan, and
+     * (4) saving the laser scan into a point cloud.
+     */
+    void obtainSlice();
 
     /*!
      * The ROS node handle.
@@ -132,6 +152,11 @@ private:
     sensor_msgs::LaserScan laserScan;
 
     /*!
+     * The message that's published by the slicePublisher.
+     */
+    pcg_node::PointCloudSliceMsg sliceMsg;
+
+    /*!
      * The state of this node, either STATE_ENABLED or STATE_DISABLED.
      */
     int state;
@@ -142,7 +167,25 @@ private:
      */
     std::mutex scanMutex, stateMutex;
 
-    char cmd[2];
+    /*!
+     * The command to send to the micro-processor.
+     */
+    char mcuCmd[2];
+
+    /*!
+     * The current step position.
+     */
+    int stepPosition;
+
+    /*!
+     * The current angle of the tilting LIDAR platform.
+     */
+    double currAngle;
+
+    /*!
+     * The message for holding the point cloud.
+     */
+    sensor_msgs::PointCloud2 pointCloudMsg;
 };
 
 } // namespace tiltingLIDARScanner
