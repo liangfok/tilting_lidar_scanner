@@ -16,7 +16,7 @@
 
 namespace tiltingLIDARScanner {
 
-PointCloudAssembler::PointCloudAssembler() :
+PointCloudAssembler::PointCloudAssembler()
 {
 }
 

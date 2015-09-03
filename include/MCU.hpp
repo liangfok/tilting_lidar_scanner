@@ -78,10 +78,12 @@ private:
     /*
      * Reads the serial port to get messages from the microcontroller.
      *
+     * \param angle The variable in which to store the current tilt angle of
+     * the LIDAR platform.
      * \return Whether a message from the microcontroller was
      * received.
      */
-    bool rcvMCUMsg();
+    bool rcvMCUMsg(double & angle);
 
     /*!
      * The serial port on which the Arduino is connected.

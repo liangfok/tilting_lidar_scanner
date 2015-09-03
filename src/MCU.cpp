@@ -105,10 +105,10 @@ bool MCU::recalibrate()
 
 bool MCU::step(double & angle)
 {
-    if (!sendMCUCmd(MCU_CMD_STEP))
-        return false;
+    // Tell stand to take a tilt step
+    sendMCUCmd(MCU_CMD_STEP);
 
-    // Wait for angle message
+    // Wait for angle message from stand
     int cycleCount = 0;
     bool msgRcvd = false;
     ros::Rate loopRate(100);
@@ -119,7 +119,6 @@ bool MCU::step(double & angle)
         loopRate.sleep();
     }
 
-    angle = this->angle;  // save the angle information
     return msgRcvd;
 }
 
@@ -130,7 +129,7 @@ void MCU::sendMCUCmd(char command)
     serialPort.flush();
 }
 
-bool MCU::rcvMCUMsg(double & angle)eK
+bool MCU::rcvMCUMsg(double & angle)
 {
     bool result = false;
     char b0, b1, b2, b3, b4, b5;

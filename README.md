@@ -18,6 +18,16 @@ Edit your ~/.bashrc and add the following line to the bottom of it:
 
     source $HOME/[workspace name]/devel/setup.bash
 
+Before compiling, ensure the following dependencies are installed:
+
+    $ sudo apt-get install libserial-dev
+
+To compile:
+
+    $ roscd
+    $ cd ..
+    $ catkin_make
+
 # Usage
 
 To start the nodes:
