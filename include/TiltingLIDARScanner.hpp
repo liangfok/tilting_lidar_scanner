@@ -32,6 +32,9 @@
 #include <SerialStream.h>
 #include <SerialStreamBuf.h>
 
+#include "MCU.hpp"
+#include "PointCloudAssembler.hpp"
+
 namespace tiltingLIDARScanner {
 
 /*!
@@ -88,28 +91,15 @@ private:
     void cmdCallback(const std_msgs::Int32 & cmd);
 
     /*!
-     * Issues a recalibrate command to the Arduino microcontroller.
-     *
-     * \param command The command to send.
-     */
-    void sendMCUCmd(char command);
-
-    /*
-     * Reads the serial port for messages from the microcontroller.
-     *
-     * \return Whether a message from the microcontroller was
-     * received.
-     */
-    bool rcvMCUMsg();
-
-    /*!
      * Obtain a single slice of the point cloud.
      * This involves (1) telling the micro-controller to tilt
      * the stand by one step, (2) obtaining the current tilt angle
      * from the stand, (3) obtaining the current laser scan, and
      * (4) saving the laser scan into a point cloud.
+     *
+     * \return Whether a slice was successfully obtained.
      */
-    void obtainSlice();
+    bool obtainSlice();
 
     /*!
      * The ROS node handle.
@@ -122,19 +112,9 @@ private:
     ros::Publisher slicePublisher;
 
     /*!
-     * The serial port on which the Arduino is connected.
-     */
-    std::string serialPortName;
-
-    /*!
      * The name of the ROS topic on which the laser scan is being published.
      */
     std::string laserScanTopic;
-
-    /*!
-     * The serial port connection to the Arduino.
-     */
-    LibSerial::SerialStream serialPort;
 
     /*!
      * The ROS topic subscriber for laser scan data.
@@ -168,19 +148,15 @@ private:
     std::mutex scanMutex, stateMutex;
 
     /*!
-     * The command to send to the micro-processor.
+     * Interface to the micro-controller.
      */
-    char mcuCmd[2];
+    MCU mcu;
 
     /*!
-     * The current step position.
+     * The object that actually constructs the point cloud from
+     * slice information.
      */
-    int stepPosition;
-
-    /*!
-     * The current angle of the tilting LIDAR platform.
-     */
-    double currAngle;
+    PointCloudAssembler pc;
 };
 
 } // namespace tiltingLIDARScanner
