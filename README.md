@@ -1,7 +1,24 @@
 # Tilting LIDAR Scanner
 Contains the ROS node that controls with the tilting LIDAR scanner and generates a point cloud.
 
-# Usage Notes
+# Workspace Configuration and Installation
+
+To create a new ROS workspace and add this package to it:
+
+    $ source /opt/ros/indigo/setup.bash
+    $ mkdir -p ~/[workspace name]/src
+    $ cd ~/[workspace name]/src
+    $ catkin_init_workspace
+    $ cd ..
+    $ catkin_make
+    $ cd ~/[workspace name]/src/
+    $ git clone git@github.com:liangfok/pcg_node.git
+
+Edit your ~/.bashrc and add the following line to the bottom of it:
+
+    source $HOME/[workspace name]/devel/setup.bash
+
+# Usage
 
 To start the nodes:
 
