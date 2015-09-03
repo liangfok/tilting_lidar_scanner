@@ -52,7 +52,10 @@ bool TiltingLIDARScanner::init()
     cmdSubscriber = nh.subscribe("cmd", QUEUE_SIZE,
         & TiltingLIDARScanner::cmdCallback, this);
 
-    return mcu.init();
+    if (pc.init())
+        return mcu.init();
+    else
+        return false;
 }
 
 bool TiltingLIDARScanner::obtainSlice()
@@ -90,7 +93,9 @@ bool TiltingLIDARScanner::start()
 {
     int currState;
 
-    ros::Rate loop_rate(100);
+    pc.start(); // start the point cloud generator
+
+    ros::Rate loopRate(100);
     while (ros::ok())
     {
         stateMutex.lock();
@@ -109,7 +114,7 @@ bool TiltingLIDARScanner::start()
             mcu.recalibrate();
 
         ros::spinOnce();
-        loop_rate.sleep();
+        loopRate.sleep();
     }
 
     return true;

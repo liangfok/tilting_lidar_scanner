@@ -23,14 +23,14 @@
 
 #include "ros/ros.h"
 
-// #include "sensor_msgs/LaserScan.h"
 #include "sensor_msgs/PointCloud2.h"
-// #include "std_msgs/Int32.h"
 #include "pcg_node/PointCloudSliceMsg.h"
 
+#include <Coordinate.hpp>
+#include <PointCloud2MsgCreator.hpp>
+
+#include <thread>
 #include <mutex>
-// #include <SerialStream.h>
-// #include <SerialStreamBuf.h>
 
 namespace tiltingLIDARScanner {
 
@@ -78,10 +78,33 @@ public:
 private:
 
     /*!
-     * Does the work of creating a point cloud from the slice
-     * information.
+     * This method is executed by a separate thread. It creates a
+     * point cloud based on slice information.
      */
-    void obtainSlice();
+    void processSlices();
+
+    /*!
+     * Processes a slice by computing the coordinates of the points in the 3D point cloud.
+     *
+     * \param currSlice The slice to process.
+     */
+    void processSlice(const pcg_node::PointCloudSliceMsg & currSlice);
+
+    /*!
+     * Convert an angle from radians to degrees.
+     */
+    double toDeg(double rad);
+
+    /*!
+     * Creates a PointCloud2 message from the list of 3D points and publishes
+     * it onto a ROS topic.
+     */
+    void createAndPublishPointCloud();
+
+    /*!
+     * Whether the child thread is done and should exit.
+     */
+    bool done;
 
     /*!
      * The ROS node handle.
@@ -103,6 +126,26 @@ private:
      * The point cloud publisher.
      */
     ros::Publisher pcPublisher;
+
+    /*!
+     * The thread that updates the inactive ControlModel.
+     */
+    std::thread thread;
+
+    /*!
+     * A buffer of incoming slice messages.
+     */
+    std::vector<pcg_node::PointCloudSliceMsg> sliceBuff;
+
+    /*!
+     * A list of 3D points that are part of a point cloud.
+     */
+    std::vector<Coordinate> pointBuff;
+
+    /*!
+     * The object that converts from a list of 3D points into a point cloud.
+     */
+    PointCloud2MsgCreator pc2MsgCreator;
 };
 
 } // namespace tiltingLIDARScanner

@@ -30,9 +30,19 @@ To compile:
 
 # Usage
 
+## Connect the MCU and LIDAR Sensor ##
+
+First attach the Arduino's USB cable to your PC. Then attach the Hokuyo LIDAR sensor's USB cable to your PC. Normally, the Arduino's connection will be /dev/ttyACM0 and the Hokuyo LIDAR sensor's connection will be /dev/ttyACM1. You can verify this by looking at the kernel messages by executing "dmsg".
+
+The serial port parameters are specified on the ROS parameter server and are loaded by the following launch file: ~/[workspace name]/src/pcg_node/launch/TiltingLIDARScanner.launch. Edit this file to have the correct serial ports.
+
+## Start the Software ##
+
 To start the nodes:
 
     $ roslaunch pcg_node TiltingLIDARScanner.launch
+
+## Using the Software ##
 
 To make the tilting LIDAR scanner perform a recalibration routine:
 
