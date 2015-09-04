@@ -6,6 +6,16 @@
         <param name="laserScanTopic" type="str" value="/scan" />
         <param name="serialPort" type="str" value="/dev/ttyACM0" />
 
+        <param name="frameID" type="str" value="tilting_lidar_scanner" />
+
+        <param name="xOffset" type="double" value="0" />
+        <param name="yOffset" type="double" value="0" />
+        <param name="zOffset" type="double" value="1.537" />
+
+        <param name="roll" type="double" value="0" />
+        <param name="pitch" type="double" value="0" />
+        <param name="yaw" type="double" value="0" />
+
         <node pkg="pcg_node" type="TiltingLIDARScanner"
             name="TiltingLIDARScanner" output="screen" />
     </group>

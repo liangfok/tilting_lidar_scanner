@@ -49,11 +49,14 @@ public:
     /*!
      * Creates a point cloud 2 message from a bunch of points.
      *
+     * \param frameID The name of the point cloud's frame.
      * \param point A vector of points.
      * \param pc2Msg The PointCloud2 message to store the data in.
      * \return Whether the message was successfully created.
      */
-    bool createPointCloud2Msg(std::vector<Coordinate> points,
+    bool createPointCloud2Msg(
+        std::string & frameID,
+        std::vector<Coordinate> points,
         sensor_msgs::PointCloud2 & pc2Msg);
 };
 

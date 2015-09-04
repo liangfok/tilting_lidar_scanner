@@ -25,9 +25,9 @@ namespace tiltingLIDARScanner {
 
 struct Coordinate
 {
-    double x;
-    double y;
-    double z;
+    float x;
+    float y;
+    float z;
 };
 
 } // namespace tiltingLIDARScanner

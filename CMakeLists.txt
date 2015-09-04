@@ -10,11 +10,12 @@ endif(CMAKE_COMPILER_IS_GNUCXX)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  rospy
-  sensor_msgs
-  std_msgs
-  message_generation
+    roscpp
+    rospy
+    sensor_msgs
+    std_msgs
+    message_generation
+    tf
 )
 
 ## System dependencies are found with CMake's conventions
@@ -52,8 +53,8 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## Generate messages in the 'msg' folder
 add_message_files(
-  FILES
-  PointCloudSliceMsg.msg
+    FILES
+    PointCloudSliceMsg.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -72,9 +73,9 @@ add_message_files(
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
-  DEPENDENCIES
-  sensor_msgs
-  std_msgs
+    DEPENDENCIES
+    sensor_msgs
+    std_msgs
 )
 
 ###################################
@@ -87,10 +88,10 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  INCLUDE_DIRS include
-#  LIBRARIES pcg_node
-  CATKIN_DEPENDS roscpp rospy std_msgs message_runtime
-#  DEPENDS system_lib
+    INCLUDE_DIRS include
+#    LIBRARIES pcg_node
+    CATKIN_DEPENDS roscpp rospy std_msgs message_runtime
+#    DEPENDS system_lib
 )
 
 ###########
@@ -100,8 +101,8 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
+    include
+    ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a cpp library

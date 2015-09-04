@@ -25,6 +25,7 @@
 
 #include "sensor_msgs/PointCloud2.h"
 #include "pcg_node/PointCloudSliceMsg.h"
+#include <tf/transform_broadcaster.h>
 
 #include <Coordinate.hpp>
 #include <PointCloud2MsgCreator.hpp>
@@ -112,6 +113,16 @@ private:
     ros::NodeHandle nh;
 
     /*!
+     * The name of the point cloud's frame.
+     */
+    std::string frameID;
+
+    /*!
+     * The conversions from the world frame to the point cloud's frame.
+     */
+    double xOffset, yOffset, zOffset, roll, pitch, yaw;
+
+    /*!
      * Mutexes for protecting variables that are shared between
      * multiple threads.
      */
@@ -146,6 +157,13 @@ private:
      * The object that converts from a list of 3D points into a point cloud.
      */
     PointCloud2MsgCreator pc2MsgCreator;
+
+    /*!
+     * Publishes the frame transformation from the world frame to
+     * the tilting LIDAR sensor's point cloud's frame.
+     */
+    tf::TransformBroadcaster tfBroadcaster;
+
 };
 
 } // namespace tiltingLIDARScanner

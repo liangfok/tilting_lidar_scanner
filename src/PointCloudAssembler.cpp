@@ -14,7 +14,6 @@
 #define LATCHED false
 
 #define TILT_RADIUS 0.08
-#define AXLE_HEIGHT 1.1075
 
 namespace tiltingLIDARScanner {
 
@@ -31,6 +30,30 @@ bool PointCloudAssembler::init()
 {
     // Initialize the ROS topic publishers
     pcPublisher = nh.advertise<sensor_msgs::PointCloud2>("pointCloud", QUEUE_SIZE, LATCHED);
+
+    // Get the name of the point cloud's frame
+    if (!nh.getParam("frameID", frameID))
+        frameID = "unknown";
+
+    // Get the transforms from the world frame to the point cloud's frame
+    if (!nh.getParam("xOffset", xOffset))
+        xOffset = 0;
+
+    if (!nh.getParam("yOffset", yOffset))
+        yOffset = 0;
+
+    if (!nh.getParam("zOffset", zOffset))
+        zOffset = 0;
+
+    if (!nh.getParam("roll", roll))
+        roll = 0;
+
+    if (!nh.getParam("pitch", pitch))
+        pitch = 0;
+
+    if (!nh.getParam("yOffset", yaw))
+        yaw = 0;
+
     return true;
 }
 
@@ -140,9 +163,9 @@ void PointCloudAssembler::processSlice(const pcg_node::PointCloudSliceMsg & curr
             //     << "     - position: (" << xB << ", " << yB << ", " << zB << ")");
 
             Coordinate currPoint;
-            currPoint.x = xB;
-            currPoint.y = yB;
-            currPoint.z = zB;
+            currPoint.x = (float)xB;
+            currPoint.y = (float)yB;
+            currPoint.z = (float)zB;
 
             pointBuff.push_back(currPoint);
         }
@@ -157,9 +180,28 @@ double PointCloudAssembler::toDeg(double rad)
 void PointCloudAssembler::createAndPublishPointCloud()
 {
     sensor_msgs::PointCloud2 pc2Msg;
-    if (pc2MsgCreator.createPointCloud2Msg(pointBuff, pc2Msg))
-    {
+    if (pc2MsgCreator.createPointCloud2Msg(frameID, pointBuff, pc2Msg))
         pcPublisher.publish(pc2Msg);
-    }
+
+    // Publish frame offset information
+    geometry_msgs::TransformStamped transMsg;
+
+    transMsg.header.frame_id = "world";
+    transMsg.child_frame_id = frameID;
+
+    transMsg.header.stamp = ros::Time::now();
+    transMsg.transform.translation.x = xOffset;
+    transMsg.transform.translation.y = yOffset;
+    transMsg.transform.translation.z = zOffset;
+
+    tf::Quaternion quat = tf::createQuaternionFromRPY(roll, pitch, yaw);
+
+    transMsg.transform.rotation.x = quat.x();
+    transMsg.transform.rotation.y = quat.y();
+    transMsg.transform.rotation.z = quat.z();
+    transMsg.transform.rotation.w = quat.w();
+
+    tfBroadcaster.sendTransform(transMsg);
+
 }
 } // namespace tiltingLIDARScanner
