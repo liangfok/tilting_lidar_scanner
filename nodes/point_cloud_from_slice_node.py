@@ -12,7 +12,7 @@ point cloud onto ROS topic pointCloud.
 import rospy                        #for interacting with ROS topics and parameters
 # import sys, getopt                  #for parameters and sys.exit()
 from sensor_msgs.msg import PointCloud2, LaserScan
-from pcg_node.msg import PointCloudSliceMsg
+from tilting_lidar_scanner.msg import PointCloudSliceMsg
 from std_msgs.msg import Header
 
 import time

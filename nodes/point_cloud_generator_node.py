@@ -15,7 +15,7 @@ import rospy                        #for interacting with ROS topics and paramet
 import sys, getopt                  #for parameters and sys.exit()
 from std_msgs.msg import Float64, Int32
 from sensor_msgs.msg import PointCloud2, LaserScan
-from pcg_node.msg import PointCloudSliceMsg
+from tilting_lidar_scanner.msg import PointCloudSliceMsg
 
 import re                           #for findall()
 import string                       #for split()

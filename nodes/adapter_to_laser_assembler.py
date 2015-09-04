@@ -8,7 +8,7 @@ Converts from PointCloudSliceMsg to LaserScan messages and tf messages.
 import rospy                        #for interacting with ROS topics and parameters
 # import sys, getopt                  #for parameters and sys.exit()
 from sensor_msgs.msg import PointCloud2, LaserScan
-from pcg_node.msg import PointCloudSliceMsg
+from tilting_lidar_scanner.msg import PointCloudSliceMsg
 from std_msgs.msg import Header
 from laser_assembler.srv import AssembleScans2
 
@@ -35,7 +35,7 @@ TILT_RADIUS = 0.08         # 0.08 meters
 AXLE_HEIGHT = 1.1075       # 1.1075 meters
 
 # Buffers
-inputBuffer = []     # for holding pcg_node/PointCloudSliceMsg messages
+inputBuffer = []     # for holding tilting_lidar_scanner/PointCloudSliceMsg messages
 # sliceBuffer = []     # for holding the point cloud slices
 transformBuffer = dict() # for holding transforms
 

@@ -71,7 +71,7 @@ bool PointCloudAssembler::stop()
     return true;
 }
 
-bool PointCloudAssembler::addSlice(const pcg_node::PointCloudSliceMsg & slice)
+bool PointCloudAssembler::addSlice(const tilting_lidar_scanner::PointCloudSliceMsg & slice)
 {
     sliceMutex.lock();
     sliceBuff.push_back(slice);
@@ -81,7 +81,7 @@ bool PointCloudAssembler::addSlice(const pcg_node::PointCloudSliceMsg & slice)
 
 void PointCloudAssembler::processSlices()
 {
-    pcg_node::PointCloudSliceMsg currSlice;
+    tilting_lidar_scanner::PointCloudSliceMsg currSlice;
 
     ros::Rate loopRate(1);
     while (!done && ros::ok())
@@ -114,7 +114,7 @@ void PointCloudAssembler::processSlices()
     }
 }
 
-void PointCloudAssembler::processSlice(const pcg_node::PointCloudSliceMsg & currSlice)
+void PointCloudAssembler::processSlice(const tilting_lidar_scanner::PointCloudSliceMsg & currSlice)
 {
     // Obtain the min and max angle from the slice
     double angleMin = currSlice.laserScan.angle_min;
@@ -179,7 +179,6 @@ double PointCloudAssembler::toDeg(double rad)
 
 void PointCloudAssembler::createAndPublishPointCloud()
 {
-    sensor_msgs::PointCloud2 pc2Msg;
     if (pc2MsgCreator.createPointCloud2Msg(frameID, pointBuff, pc2Msg))
         pcPublisher.publish(pc2Msg);
 

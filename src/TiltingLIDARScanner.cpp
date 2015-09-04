@@ -40,7 +40,7 @@ TiltingLIDARScanner::~TiltingLIDARScanner()
 bool TiltingLIDARScanner::init()
 {
     // Initialize the ROS topic publishers
-    slicePublisher = nh.advertise<pcg_node::PointCloudSliceMsg>("slices", QUEUE_SIZE, LATCHED);
+    slicePublisher = nh.advertise<tilting_lidar_scanner::PointCloudSliceMsg>("slices", QUEUE_SIZE, LATCHED);
 
     // Initialize the ROS topic subscribers
     nh.getParam("laserScanTopic", laserScanTopic);

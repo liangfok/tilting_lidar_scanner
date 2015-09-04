@@ -24,7 +24,7 @@
 #include "ros/ros.h"
 
 #include "sensor_msgs/PointCloud2.h"
-#include "pcg_node/PointCloudSliceMsg.h"
+#include "tilting_lidar_scanner/PointCloudSliceMsg.h"
 #include <tf/transform_broadcaster.h>
 
 #include <Coordinate.hpp>
@@ -74,7 +74,7 @@ public:
     /*!
      * Adds a new point cloud slice to the point cloud.
      */
-    bool addSlice(const pcg_node::PointCloudSliceMsg & slice);
+    bool addSlice(const tilting_lidar_scanner::PointCloudSliceMsg & slice);
 
 private:
 
@@ -89,7 +89,7 @@ private:
      *
      * \param currSlice The slice to process.
      */
-    void processSlice(const pcg_node::PointCloudSliceMsg & currSlice);
+    void processSlice(const tilting_lidar_scanner::PointCloudSliceMsg & currSlice);
 
     /*!
      * Convert an angle from radians to degrees.
@@ -146,7 +146,7 @@ private:
     /*!
      * A buffer of incoming slice messages.
      */
-    std::vector<pcg_node::PointCloudSliceMsg> sliceBuff;
+    std::vector<tilting_lidar_scanner::PointCloudSliceMsg> sliceBuff;
 
     /*!
      * A list of 3D points that are part of a point cloud.
@@ -163,6 +163,11 @@ private:
      * the tilting LIDAR sensor's point cloud's frame.
      */
     tf::TransformBroadcaster tfBroadcaster;
+
+    /*!
+     * The point cloud 2 message to publish.
+     */
+    sensor_msgs::PointCloud2 pc2Msg;
 
 };
 

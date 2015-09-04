@@ -26,7 +26,7 @@
 #include "sensor_msgs/LaserScan.h"
 #include "sensor_msgs/PointCloud2.h"
 #include "std_msgs/Int32.h"
-#include "pcg_node/PointCloudSliceMsg.h"
+#include "tilting_lidar_scanner/PointCloudSliceMsg.h"
 
 #include <mutex>
 #include <SerialStream.h>
@@ -134,7 +134,7 @@ private:
     /*!
      * The message that's published by the slicePublisher.
      */
-    pcg_node::PointCloudSliceMsg sliceMsg;
+    tilting_lidar_scanner::PointCloudSliceMsg sliceMsg;
 
     /*!
      * The state of this node, either STATE_ENABLED or STATE_DISABLED.

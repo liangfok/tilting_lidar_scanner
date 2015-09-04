@@ -16,7 +16,7 @@
         <param name="pitch" type="double" value="0" />
         <param name="yaw" type="double" value="0" />
 
-        <node pkg="pcg_node" type="TiltingLIDARScanner"
+        <node pkg="tilting_lidar_scanner" type="TiltingLIDARScanner"
             name="TiltingLIDARScanner" output="screen" />
     </group>
 

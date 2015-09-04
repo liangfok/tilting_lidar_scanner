@@ -12,7 +12,7 @@ To create a new ROS workspace and add this package to it:
     $ cd ..
     $ catkin_make
     $ cd ~/[workspace name]/src/
-    $ git clone git@github.com:liangfok/pcg_node.git
+    $ git clone git@github.com:liangfok/tilting_lidar_scanner.git
 
 Edit your ~/.bashrc and add the following line to the bottom of it:
 
@@ -39,7 +39,7 @@ First attach the Arduino's USB cable to your PC. Then attach the Hokuyo LIDAR se
 There are several parameters you can set like the serial ports used by the tilting stand and LIDAR sensor, the name of the point cloud's frame, and the conversion from the world frame to the point cloud's frame. These parameters are stored on the ROS parameter server and are loaded by the following launch file:
 
 
-    ~/[workspace name]/src/pcg_node/launch/TiltingLIDARScanner.launch
+    ~/[workspace name]/src/tilting_lidar_scanner/launch/TiltingLIDARScanner.launch
 
 Edit this launch file to have the desired parameter values.
 
@@ -47,7 +47,7 @@ Edit this launch file to have the desired parameter values.
 
 To start the tilting LIDAR scanner software:
 
-    $ roslaunch pcg_node TiltingLIDARScanner.launch
+    $ roslaunch tilting_lidar_scanner TiltingLIDARScanner.launch
 
 ## Using the Software ##
 
