@@ -1,5 +1,6 @@
-# Tilting LIDAR Scanner
-Contains the ROS node that controls with the tilting LIDAR scanner and generates a point cloud.
+# Tilting LIDAR Point Cloud Scanner
+
+A ROS package containing software that controls the tilting LIDAR scanner and generates a point cloud.
 
 # Workspace Configuration and Installation
 
